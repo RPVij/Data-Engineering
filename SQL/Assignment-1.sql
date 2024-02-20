@@ -256,3 +256,62 @@ FROM station
 WHERE LOWER(SUBSTRING(city,1,1)) NOT IN ('a','e','i','o','u')
 AND LOWER(SUBSTRING(city,LENGTH(city),1)) NOT IN ('a','e','i','o','u');
 
+-- Q17 --
+CREATE TABLE IF NOT EXISTS product
+(
+	 product_id INT NOT NULL
+    ,product_name VARCHAR(255)
+	,unit_price INT
+    ,CONSTRAINT pk PRIMARY KEY(product_id)
+);
+
+INSERT INTO product VALUES(1,'S8',1000);
+INSERT INTO product VALUES(2,'G4',800);
+INSERT INTO product VALUES(3,'iPhone',1400);
+
+CREATE TABLE IF NOT EXISTS sales
+(
+	 seller_id INT
+    ,product_id INT
+    ,buyer_id INT
+    ,sale_date DATE
+    ,quantity INT
+    ,price INT
+    ,CONSTRAINT fk FOREIGN KEY(product_id) REFERENCES product(product_id)
+);
+
+INSERT INTO sales VALUES(1,1,1,'2019-01-21',2,2000);
+INSERT INTO sales VALUES(1,2,2,'2019-02-17',1,800);
+INSERT INTO sales VALUES(2,2,3,'2019-06-02',1,800);
+INSERT INTO sales VALUES(3,3,4,'2019-05-13',2,2800);
+
+SELECT
+	 product_id
+    ,product_name
+FROM product
+WHERE product_id NOT IN (
+	SELECT product_id
+    FROM sales
+    WHERE sale_date NOT BETWEEN '2019-01-01' AND '2019-03-31')
+;
+
+-- Q18 --
+CREATE TABLE IF NOT EXISTS views
+(
+	 article_id INT
+	,author_id INT
+    ,viewer_id INT
+    ,view_date DATE
+);
+
+INSERT INTO views VALUES (1,3,5,'2019-08-01'),
+(1,3,6,'2019-08-02'),(2,7,7,'2019-08-01'),(2,7,6,'2019-08-02'),
+(4,7,1,'2019-07-22'), (3,4,4,'2019-07-21'),(3,4,4,'2019-07-21');
+
+SELECT DISTINCT
+	author_id
+FROM views
+WHERE author_id=viewer_id
+ORDER BY author_id;
+
+-- Q19 --
