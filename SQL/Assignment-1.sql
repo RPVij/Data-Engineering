@@ -337,3 +337,59 @@ SELECT ROUND(SUM(order_date=customer_pref_delivery_date)*100/COUNT(*),2) AS imme
 FROM delivery;
 
 -- Q20 --
+CREATE TABLE IF NOT EXISTS ads
+(
+	 ad_id INT
+	,user_id INT
+	,action ENUM('Clicked','Viewed','Ignored')
+	,CONSTRAINT pk PRIMARY KEY (ad_id, user_id)
+)
+;
+
+INSERT INTO ads VALUES
+	 (1,1,'Clicked')
+	,(2,2,'Clicked')
+	,(3,3,'Viewed')
+	,(5,5,'Ignored')
+	,(1,7,'Ignored')
+	,(2,7,'Viewed')
+	,(3,5,'Clicked')
+	,(1,4,'Viewed')
+	,(2,11,'Viewed')
+	,(1,2,'Clicked');
+
+SELECT
+	 ad_id
+	,CASE
+		WHEN total_clicks + total_views = 0 THEN 0
+		ELSE ROUND((total_clicks)/(total_clicks + total_views),2)
+	 END AS ctr
+FROM (
+	SELECT
+		 ad_id
+		,SUM(action = 'Clicked') AS total_clicks
+		,SUM(action = 'Viewed') AS total_views
+	FROM ads
+	GROUP BY ad_id
+) a
+ORDER BY ctr DESC
+;
+
+-- Q21 --
+CREATE TABLE IF NOT EXISTS employee
+(
+	 employee_id INT
+    ,team_id INT
+    ,CONSTRAINT pk PRIMARY KEY (employee_id)
+)
+;
+
+INSERT INTO Employee VALUES(1,8),(2,8),(3,8),(4,7),(5,9),(6,9);
+
+
+SELECT
+	 employee_id
+	,COUNT(*) OVER(PARTITION BY team_id) AS team_size
+FROM employee
+ORDER BY team_size DESC
+;
