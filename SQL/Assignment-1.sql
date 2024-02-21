@@ -393,3 +393,138 @@ SELECT
 FROM employee
 ORDER BY team_size DESC
 ;
+
+-- Q22 --
+CREATE TABLE IF NOT EXISTS countries
+(
+	 country_id INT
+	,country_name VARCHAR(64)
+	,CONSTRAINT pk PRIMARY KEY(country_id)
+)
+;
+
+INSERT INTO countries VALUES
+	 (2,'USA')
+	,(3,'Australia')
+	,(7,'Peru')
+	,(5,'China')
+	,(8,'Morocco')
+	,(9,'Spain')
+;
+
+CREATE TABLE IF NOT EXISTS weather
+(
+	 country_id INT
+	,weather_state INT
+	,day DATE
+	,CONSTRAINT pk PRIMARY KEY(country_id,day)
+)
+;
+
+INSERT INTO weather VALUES
+	(2,15,'2019-11-01')
+	,(2,12,'2019-10-28')
+	,(2,12,'2019-10-27')
+	,(3,-2,'2019-11-10')
+	,(3,0,'2019-11-11')
+	,(3,3,'2019-11-12')
+	,(5,16,'2019-11-07')
+	,(5,18,'2019-11-09')
+	,(5,21,'2019-11-23')
+	,(7,25,'2019-11-28')
+	,(7,22,'2019-12-01')
+	,(7,20,'2019-12-02')
+	,(8,25,'2019-11-05')
+	,(8,27,'2019-11-15')
+	,(8,31,'2019-11-25')
+	,(9,7,'2019-10-23')
+	,(9,3,'2019-12-23')
+;
+
+SELECT
+	 country_name
+	,CASE
+		WHEN AVG(weather_state) <= 15 THEN 'Cold'
+		WHEN AVG(weather_state) >= 25 THEN 'Hot'
+		ELSE 'Warm'
+	END AS weather_type
+FROM countries a
+INNER JOIN weather b
+ON a.country_id = b.country_id
+WHERE b.day BETWEEN '2019-11-01' AND '2019-11-30'
+GROUP BY country_name
+ORDER BY weather_type
+;
+
+-- Q23 --
+CREATE TABLE IF NOT EXISTS prices
+(
+	 product_id INT
+	,start_date DATE
+	,end_date DATE
+	,price INT
+	,CONSTRAINT pk PRIMARY KEY(product_id, start_date, end_date)
+)
+;
+
+INSERT INTO prices VALUES
+	 (1,'2019-02-17','2019-02-28',5)
+	,(1,'2019-03-01','2019-03-22',20)
+	,(2,'2019-02-01','2019-02-20',15)
+	,(2,'2019-02-21','2019-03-31',30)
+;
+
+
+CREATE TABLE IF NOT EXISTS unitssold
+(
+	 product_id INT
+	,purchase_date DATE
+	,units INT
+)
+;
+
+INSERT INTO UnitsSold VALUES
+	 (1,'2019-02-25',100)
+	,(1,'2019-03-01',15)
+	,(2,'2019-02-10',200)
+	,(2,'2019-03-22',30)
+	;
+
+SELECT
+	 a.product_id
+	,ROUND(SUM(a.price*b.units)/SUM(b.units),2) AS avg_price
+FROM prices a
+INNER JOIN unitssold b
+ON a.product_id = b.product_id
+WHERE b.purchase_date BETWEEN a.start_date AND a.end_date
+GROUP BY a.product_id
+ORDER BY avg_price
+;
+
+-- Q24 --
+CREATE TABLE IF NOT EXISTS activity
+(
+	 player_id INT
+	,device_id INT
+	,event_date DATE
+	,games_played INT
+	,CONSTRAINT pk PRIMARY KEY(player_id,event_date)
+)
+;
+
+INSERT INTO Activity VALUES
+	 (1,2,'2016-03-01',5)
+	,(1,2,'2016-05-02',6)
+	,(2,3,'2017-06-25',1)
+	,(3,1,'2016-03-02',0)
+	,(3,4,'2018-07-03',5)
+;
+
+SELECT
+	 player_id
+	,MIN(event_date) AS first_login
+FROM activity
+GROUP BY player_id
+;
+
+-- Q25 --
