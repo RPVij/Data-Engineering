@@ -528,3 +528,14 @@ GROUP BY player_id
 ;
 
 -- Q25 --
+SELECT
+	 player_id
+	,device_id
+FROM(
+	SELECT
+		 a.*
+		,ROW_NUMBER() OVER(PARTITION BY a.player_id ORDER BY(a.event_date)) AS device_login_order
+	FROM activity a
+) b
+WHERE device_login_order = 1
+;
