@@ -539,3 +539,413 @@ FROM(
 ) b
 WHERE device_login_order = 1
 ;
+
+-- Q26 --
+CREATE TABLE IF NOT EXISTS products
+(
+	 product_id INT
+    ,product_name VARCHAR(64)
+    ,product_category VARCHAR(64)
+    ,CONSTRAINT pk PRIMARY KEY (product_id)
+)
+;
+
+INSERT INTO products VALUES
+	 (1,'Leetcode Solutions','Book')
+	,(2,'Jewels of Stringology','Book')
+	,(3,'HP','Laptop')
+	,(4,'Lenovo','Laptop')
+	,(5,'Leetcode Kit','T-shirt')
+;
+
+
+CREATE TABLE IF NOT EXISTS orders
+(
+	 product_id INT
+    ,order_date DATE
+    ,unit INT
+    ,CONSTRAINT fk1 FOREIGN KEY (product_id) REFERENCES products(product_id)
+)
+;
+
+INSERT INTO orders VALUES
+	 (1,'2020-02-05',60)
+	,(1,'2020-02-10',70)
+	,(2,'2020-01-18',30)
+	,(2,'2020-02-11',80)
+	,(3,'2020-02-17',2)
+	,(3,'2020-02-24',3)
+	,(4,'2020-03-01',20)
+	,(4,'2020-03-04',30)
+	,(4,'2020-03-04',60)
+	,(5,'2020-02-25',50)
+	,(5,'2020-02-27',50)
+	,(5,'2020-03-01',50)
+;
+
+SELECT
+	product_name
+FROM products p
+INNER JOIN orders o
+ON p.product_id = o.product_id
+WHERE o.order_date BETWEEN '2020-02-01' AND '2020-02-29'
+GROUP BY p.product_name
+HAVING SUM(o.unit) >= 100
+;
+
+-- Q27 --
+CREATE TABLE IF NOT EXISTS users
+(
+	 user_id INT
+	,name VARCHAR(64)
+	,mail VARCHAR(64)
+	,CONSTRAINT pk PRIMARY KEY (user_id)
+)
+;
+
+INSERT INTO users VALUES
+	 (1,'Winston','winston@leetcode.com')
+	,(2,'Jonathan','jonathanisgreat')
+	,(3,'Annabelle','bella-@leetcode.com')
+	,(4,'Sally','sally.come@leetcode.com')
+	,(5,'Marwan','quarz#2020@leetcode.com')
+	,(6,'David','david69@gmail.com')
+	,(7,'Shapiro','.shapo@leetcode.com')
+;
+
+SELECT *
+FROM users
+WHERE REGEXP_LIKE(mail, '^[a-zA-Z][a-zA-Z0-9\_\.\-]*@leetcode.com')
+;
+
+-- Q28 --
+CREATE TABLE IF NOT EXISTS customers
+(
+	 customer_id INT
+	,name VARCHAR(64)
+	,country VARCHAR(64)
+	,CONSTRAINT pk PRIMARY KEY (customer_id)
+)
+;
+
+INSERT INTO customers VALUES
+     (1,'Winston','USA')
+	,(2,'Jonathan','Peru')
+	,(3,'Moustafa','Egypt')
+;
+
+CREATE TABLE IF NOT EXISTS product_28
+(
+	 product_id INT
+	,description VARCHAR(255)
+	,price INT
+	,CONSTRAINT pk PRIMARY KEY (product_id)
+)
+;
+
+INSERT INTO product_28 VALUES
+ 	 (10,'LC Phone',300)
+	,(20,'LCT-Shirt',10)
+	,(30,'LC Book',45)
+	,(40,'LC Keychain',2)
+;
+
+CREATE TABLE IF NOT EXISTS orders_28
+(
+	 order_id INT
+	,customer_id INT
+	,product_id INT
+	,order_date DATE
+	,quantity INT
+	,CONSTRAINT pk PRIMARY KEY (order_id)
+)
+;
+
+INSERT INTO orders_28 VALUES
+	 (1,1,10,'2020-06-10',1)
+	,(2,1,20,'2020-07-01',1)
+	,(3,1,30,'2020-07-08',2)
+	,(4,2,10,'2020-06-15',2)
+	,(5,2,40,'2020-07-01',10)
+	,(6,3,20,'2020-06-24',2)
+	,(7,3,30,'2020-06-25',2)
+	,(9,3,30,'2020-05-08',3)
+;
+
+SELECT
+	 c.customer_id
+    ,c.name
+FROM customers c
+INNER JOIN orders_28 O
+ON c.customer_id = o.customer_id
+INNER JOIN product_28 p
+ON o.product_id = p.product_id
+GROUP BY
+	 customer_id
+    ,name
+HAVING
+	SUM(CASE WHEN o.order_date BETWEEN '2020-06-01' AND '2020-06-30' THEN o.quantity*p.price ELSE 0 END) >= 100
+    AND SUM(CASE WHEN o.order_date BETWEEN '2020-07-01' AND '2020-07-31' THEN o.quantity*p.price ELSE 0 END) >= 100
+;
+
+-- Q29 --
+CREATE TABLE IF NOT EXISTS tvprogram
+(
+	 program_date DATE
+	,content_id INT
+	,channel VARCHAR(128)
+	,CONSTRAINT pk PRIMARY KEY (program_date, content_id)
+)
+;
+
+INSERT INTO tvprogram VALUES
+	 ('2020-06-10 08:00',1,'LC-Channel')
+	,('2020-05-11 12:00',2,'LC-Channel')
+	,('2020-05-12 12:00',3,'LC-Channel')
+	,('2020-05-13 14:00',4,'Disney Ch')
+	,('2020-06-18 14:00',4,'Disney Ch')
+	,('2020-07-15 16:00',5,'Disney Ch')
+;
+
+
+CREATE TABLE IF NOT EXISTS content
+(
+	 content_id VARCHAR(64)
+	,title VARCHAR(128)
+	,kids_content ENUM('Y','N')
+	,content_type VARCHAR(128)
+	,CONSTRAINT pk PRIMARY KEY (content_id)
+)
+;
+
+INSERT INTO content VALUES
+	 (1,'Leetcode Movie','N','Movies')
+	,(2,'Alg. for Kids','Y','Series')
+	,(3,'Database Sols','N','Series')
+	,(4,'Aladdin','Y','Movies')
+	,(5,'Cinderella','Y','Movies')
+;
+
+SELECT DISTINCT
+	title
+FROM content c
+INNER JOIN tvprogram t
+ON CONVERT(c.content_id, CHAR) = t.content_id
+WHERE t.program_date BETWEEN '2020-06-01' AND '2020-06-30'
+AND kids_content = 'Y'
+;
+
+-- Q30 --
+CREATE TABLE IF NOT EXISTS npv
+(
+	 id INT
+	,year INT
+	,npv INT
+	,CONSTRAINT pk PRIMARY KEY (id,year)
+)
+;
+
+INSERT INTO npv VALUES
+	 (1,2018,100)
+	,(7,2020,30)
+	,(13,2019,40)
+	,(1,2019,113)
+	,(2,2008,121)
+	,(3,2009,12)
+	,(11,2020,99)
+	,(7,2019,0)
+;
+
+CREATE TABLE IF NOT EXISTS queries
+(
+	 id INT
+	,year INT
+	,CONSTRAINT pk PRIMARY KEY (id,year)
+)
+;
+
+INSERT INTO queries VALUES
+	 (1,2019)
+	,(2,2008)
+	,(3,2009)
+	,(7,2018)
+	,(7,2019)
+	,(7,2020)
+	,(13,2019)
+;
+
+SELECT
+	 q.id
+	,q.year
+	,COALESCE(n.npv,0)  AS npv
+FROM queries q
+LEFT JOIN npv n
+ON n.id = q.id
+AND n.year = q.year
+ORDER BY
+	 id
+	,year
+;
+
+-- Q31 --
+SELECT
+	 n.id
+	,n.year
+	,COALESCE(n.npv,0)  AS npv
+FROM queries q
+RIGHT JOIN npv n
+ON n.id = q.id
+AND n.year = q.year
+ORDER BY
+	 id
+	,year
+;
+
+-- Q32 --
+CREATE TABLE IF NOT EXISTS employees
+(
+	 id INT
+	,name VARCHAR(64)
+	,CONSTRAINT pk PRIMARY KEY (id)
+)
+;
+
+INSERT INTO employees VALUES
+	 (1,'Alice')
+	,(7,'Bob')
+	,(11,'Meir')
+	,(90,'Winston')
+	,(3,'Jonathan')
+;
+
+
+CREATE TABLE IF NOT EXISTS employeeuni
+(
+	 id INT
+	,unique_id INT
+	,CONSTRAINT pk PRIMARY KEY (id, unique_id)
+)
+;
+
+INSERT INTO employeeuni VALUES
+	 (3,1)
+	,(11,2)
+	,(90,3)
+;
+
+SELECT
+	 u.unique_id
+	,e.name
+FROM employees e
+LEFT JOIN employeeuni u
+ON e.id = u.id
+;
+
+-- Q33 --
+CREATE TABLE IF NOT EXISTS users_33
+(
+	 id INT
+	,name VARCHAR(64)
+	,CONSTRAINT pk PRIMARY KEY (id)
+)
+;
+
+INSERT INTO users_33 VALUES
+	 (1,'Alice')
+	,(2,'Bob')
+	,(3,'Alex')
+	,(4,'Donald')
+	,(7,'Lee')
+	,(13,'Jonathan')
+	,(19,'Elvis')
+;
+
+CREATE TABLE IF NOT EXISTS rides
+(
+	 id INT
+	,user_id INT
+	,distance INT
+	,CONSTRAINT pk PRIMARY KEY (id)
+)
+;
+
+INSERT INTO rides VALUES
+	 (1,1,120)
+	,(2,2,317)
+	,(3,3,222)
+	,(4,7,100)
+	,(5,13,312)
+	,(6,19,50)
+	,(7,7,120)
+	,(8,19,400)
+	,(9,7,230)
+;
+
+SELECT
+	 u.name
+	,COALESCE(SUM(r.distance),0) AS distance
+FROM users_33 u
+LEFT JOIN rides r
+ON u.id = r.user_id
+GROUP BY u.id
+ORDER BY
+	 SUM(r.distance) DESC
+	,name
+;
+
+-- Q34 --
+/*
+	SAME AS 26
+*/
+
+-- Q35 --
+CREATE TABLE IF NOT EXISTS movies
+(
+	 movie_id INT
+	,title VARCHAR(64)
+	,CONSTRAINT pk PRIMARY KEY (movie_id)
+)
+;
+
+INSERT INTO movies VALUES
+	 (1,'Avengers')
+	,(2,'Frozen 2')
+	,(3,'Joker')
+;
+
+CREATE TABLE IF NOT EXISTS users_35
+(
+	 user_id INT
+	,name VARCHAR(64)
+	,CONSTRAINT pk PRIMARY KEY (user_id) 
+)
+;
+
+INSERT INTO users_35 VALUES
+	 (1,'Daniel')
+	,(2,'Monica')
+	,(3,'Maria')
+	,(4,'James')
+;
+
+CREATE TABLE IF NOT EXISTS movierating
+(
+	 movie_id INT
+	,user_id INT
+	,rating INT
+	,created_at DATE
+	,CONSTRAINT pk PRIMARY KEY (movie_id,user_id)
+)
+;
+
+INSERT INTO movierating VALUES
+	 (1,1,3,'2020-01-12')
+	,(1,2,4,'2020-02-11')
+	,(1,3,2,'2020-02-12')
+	,(1,4,1,'2020-01-01')
+	,(2,1,5,'2020-02-17')
+	,(2,2,2,'2020-02-01')
+	,(2,3,2,'2020-03-01')
+	,(3,1,3,'2020-02-22')
+	,(3,2,4,'2020-02-25')
+;
