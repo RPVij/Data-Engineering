@@ -960,3 +960,55 @@ INSERT INTO movierating VALUES
 	SAME AS 32
 */
 
+-- Q38 --
+CREATE TABLE IF NOT EXISTS departments
+(
+	 id INT
+	,name VARCHAR(128)
+	,CONSTRAINT pk PRIMARY KEY (id)
+)
+;
+
+INSERT INTO departments VALUES 
+	 (1,'Electrical Engineering')
+	,(7,'Computer Engineering')
+	,(13,'Business Administration')
+;
+
+CREATE TABLE IF NOT EXISTS students
+(
+	 id INT
+	,name VARCHAR(128)
+	,department_id INT
+	,CONSTRAINT pk PRIMARY KEY (id)
+)
+;
+
+INSERT INTO students VALUES
+	 (23,'Alice',1)
+	,(1,'Bob',7)
+	,(5,'Jennifer',13)
+	,(2,'John',14)
+	,(4,'Jasmine',77)
+	,(3,'Steve',74)
+	,(6,'Luis',1)
+	,(8,'Jonathan',7)
+	,(7,'Daiana',33)
+	,(11,'Madelynn',1)
+;
+
+SELECT
+	 id
+	,name
+FROM
+(
+	SELECT
+		 s.id AS id
+		,s.name AS name
+		,d.id AS department_id
+	FROM students s
+	LEFT JOIN departments d
+	ON s.department_id = d.id
+) a
+WHERE department_id IS NULL
+;
