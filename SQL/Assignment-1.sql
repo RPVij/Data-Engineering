@@ -1012,3 +1012,84 @@ FROM
 ) a
 WHERE department_id IS NULL
 ;
+
+-- 39 --
+CREATE TABLE IF NOT EXISTS calls
+(
+	 from_id INT
+	,to_id INT
+	,duration INT
+)
+;
+
+INSERT INTO calls VALUES
+	 (1,2,59)
+	,(2,1,11)
+	,(1,3,20)
+	,(3,4,100)
+	,(3,4,200)
+	,(3,4,200)
+	,(4,3,499)
+;
+
+SELECT
+	 LEAST(from_id, to_id) AS person1
+	,GREATEST(from_id, to_id) AS person2
+	,COUNT(*)
+	,SUM(duration)
+FROM calls
+GROUP BY
+	 person1
+	,person2
+;
+
+-- 40 --
+/*
+	SAME AS 23
+*/
+
+-- Q41 --
+CREATE TABLE IF NOT EXISTS warehouse
+(
+	 name VARCHAR(128)
+	,product_id INT
+	,units INT
+	,CONSTRAINT pk PRIMARY KEY (name, product_id)
+)
+;
+
+INSERT INTO warehouse VALUES
+ 	('LCHouse1',1,1)
+	,('LCHouse1',2,10)
+	,('LCHouse1',3,5)
+	,('LCHouse2',1,2)
+	,('LCHouse2',2,2)
+	,('LCHouse3',4,1)
+;
+
+CREATE TABLE IF NOT EXISTS products_41
+(
+	 product_id INT
+	,product_name VARCHAR(128)
+	,width INT
+	,length INT
+	,height INT
+	,CONSTRAINT pk PRIMARY KEY (product_id)
+)
+;
+
+INSERT INTO products_41 VALUES
+	 (1,'LC-TV',5,50,40)
+	,(2,'LC-KeyChain',5,5,5)
+	,(3,'LC-Phone',2,10,10)
+	,(4,'LC-T-Shirt',4,10,20)
+;
+
+SELECT
+	 w.name
+	,SUM(w.units*p.width*p.length*p.height) AS volume
+FROM warehouse w
+INNER JOIN products_41 p
+ON w.product_id = p.product_id
+GROUP BY w.name
+;
