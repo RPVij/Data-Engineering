@@ -1093,3 +1093,133 @@ INNER JOIN products_41 p
 ON w.product_id = p.product_id
 GROUP BY w.name
 ;
+
+-- Q42 --
+CREATE TABLE IF NOT EXISTS sales_42
+(
+	 sale_date DATE
+	,fruit ENUM('apples', 'oranges')
+	,sold_num INT
+	,CONSTRAINT pk PRIMARY KEY (sale_date, fruit)
+)
+;
+
+INSERT INTO sales_42 VALUES
+	 ('2020-05-01','apples',10)
+	,('2020-05-01','oranges',8)
+	,('2020-05-02','apples',15)
+	,('2020-05-02','oranges',15)
+	,('2020-05-03','apples',20)
+	,('2020-05-03','oranges',0)
+	,('2020-05-04','apples',15)
+	,('2020-05-04','oranges',16)
+;
+
+SELECT DISTINCT
+	a.sale_date
+	, CASE WHEN
+		a.fruit = 'apples' THEN a.sold_num - b.sold_num
+		ELSE b.sold_num - a.sold_num
+	END AS difference
+FROM sales_42 a
+INNER JOIN sales_42 b
+ON a.sale_date = b.sale_date
+WHERE a.fruit != b.fruit
+;
+
+-- Q43 --
+CREATE TABLE IF NOT EXISTS activity_43
+(
+	 player_id INT
+	,device_id INT
+	,event_date DATE
+	,games_played INT
+	,CONSTRAINT pk PRIMARY KEY (player_id, event_date)
+)
+;
+
+INSERT INTO activity_43 VALUES
+	 (1,2,'2016-03-01',5)
+	,(1,2,'2016-03-02',6)
+	,(2,3,'2017-06-25',1)
+	,(3,1,'2016-03-02',0)
+	,(3,4,'2018-07-03',5)
+;
+
+--------- CTE To Be Done Later ---------
+
+-- Q44 --
+CREATE TABLE IF NOT EXISTS employee_44
+(
+	 id INT
+	,name VARCHAR(128)
+	,department VARCHAR(128)
+	,managerid INT
+	,CONSTRAINT pk PRIMARY KEY (id)
+)
+;
+
+INSERT INTO employee_44 VALUES
+	 (101,'John','A',NULL)
+	,(102,'Dan','A',101)
+	,(103,'James','A',101)
+	,(104,'Amy','A',101)
+	,(105,'Anne','A',101)
+	,(106,'Ron','B',101)
+;
+
+SELECT
+	b.name
+	,COUNT(*) AS employee_cnt
+FROM employee_44 a
+INNER JOIN employee_44 b
+ON a.managerid = b.id
+GROUP BY b.name
+;
+
+-- Q45 --
+CREATE TABLE IF NOT EXISTS department_45
+(
+	 dept_id INT
+	,dept_name VARCHAR(128)
+	,CONSTRAINT pk PRIMARY KEY (dept_id)
+)
+;
+
+INSERT INTO department_45 VALUES
+	 (1,'Engineering')
+	,(2,'Science')
+	,(3,'Law')
+;
+
+CREATE TABLE IF NOT EXISTS student_45
+(
+	 student_id INT
+	,student_name VARCHAR(128)
+	,gender VARCHAR(128)
+	,dept_id INT
+	,CONSTRAINT pk PRIMARY KEY (student_id)
+	,CONSTRAINT dk FOREIGN KEY (dept_id)
+	 REFERENCES department_45(dept_id)
+)
+;
+
+INSERT INTO student_45 VALUES
+	 (1,'Jack','M',1)
+	,(2,'Jane','F',1)
+	,(3,'Mark','M',2)
+;
+
+SELECT
+	 dept_name
+	,SUM(CASE WHEN student_id IS NOT NULL THEN 1 ELSE 0 END) AS student_cnt
+FROM department_45 d
+LEFT JOIN student_45 s
+ON d.dept_id = s.dept_id
+GROUP BY dept_name
+ORDER BY
+	 student_cnt DESC
+	,dept_name ASC
+;
+
+-- Q46 --
