@@ -1223,3 +1223,238 @@ ORDER BY
 ;
 
 -- Q46 --
+CREATE TABLE IF NOT EXISTS product_46
+(
+	 product_key INT
+	,CONSTRAINT pk PRIMARY KEY (product_key)
+)
+;
+INSERT INTO product_46 VALUES (5),(6);
+
+CREATE TABLE IF NOT EXISTS customer_46
+(
+	 customer_id INT
+	,product_key INT
+	,CONSTRAINT fk_46 FOREIGN KEY (product_key)
+	REFERENCES product_46(product_key)
+)
+;
+INSERT INTO customer_46 VALUES (1,5),(2,6),(3,5),(3,6),(1,6);
+
+SELECT
+	 customer_id
+FROM customer_46
+GROUP BY customer_id
+HAVING COUNT(DISTINCT product_key) = (SELECT COUNT(*) FROM product_46)
+;
+
+-- Q47 --
+CREATE TABLE IF NOT EXISTS employee_47
+(
+	 employee_id INT
+	,name VARCHAR(128)
+	,experience_years INT
+	,CONSTRAINT pk PRIMARY KEY (employee_id)
+)
+;
+INSERT INTO employee_47 VALUES
+	 (1,'Khaled',3)
+	,(2,'Ali',2)
+	,(3,'John',3)
+	,(4,'Doe',2)
+;
+
+CREATE TABLE IF NOT EXISTS project_47
+(
+	 project_id INT
+	,employee_id INT
+	,CONSTRAINT pk PRIMARY KEY (project_id, employee_id)
+	,CONSTRAINT fk_47 FOREIGN KEY (employee_id)
+	REFERENCES employee_47(employee_id)
+)
+;
+INSERT INTO project_47 VALUES (1,1),(1,2),(1,3),(2,1),(2,4);
+
+SELECT
+	 project_id
+	,employee_id
+FROM
+(
+	SELECT
+		 p.project_id
+		,e.employee_id
+		,e.experience_years
+		,DENSE_RANK() OVER (PARTITION BY p.project_id ORDER BY e.experience_years DESC) AS rank_order
+	FROM employee_47 e
+	INNER JOIN project_47 p
+	ON e.employee_id = p.employee_id
+) a
+WHERE rank_order=1
+;
+
+-- Q48 --
+CREATE TABLE IF NOT EXISTS books_48
+(
+	 book_id INT
+	,name VARCHAR(128)
+	,available_from DATE
+	,CONSTRAINT pk PRIMARY KEY (book_id)
+)
+;
+INSERT INTO books_48 VALUES
+	 (1,'"Kalila And Demna"','2010-01-01')
+	,(2,'"28Letters"','2012-05-12')
+	,(3,'"The Hobbit"','2019-06-10')
+	,(4,'"13 ReasonsWhy"','2010-01-01')
+	,(5,'"The Hunger Games"','2008-09-21')
+;
+
+CREATE TABLE IF NOT EXISTS orders_48
+(
+	 order_id INT
+	,book_id INT
+	,quantity INT
+	,dispatch_date DATE
+	,CONSTRAINT pk PRIMARY KEY (order_id)
+	,CONSTRAINT fk_48 FOREIGN KEY (book_id)
+	REFERENCES books_48(book_id)
+)
+;
+INSERT INTO orders_48 VALUES
+	 (1,1,2,'2018-07-26')
+	,(2,1,1,'2018-11-05')
+	,(3,3,8,'2019-06-11')
+	,(4,4,6,'2019-06-05')
+	,(5,4,5,'2019-06-20')
+	,(6,5,9,'2009-02-02')
+	,(7,5,8,'2010-04-13')
+;
+
+SELECT
+	 b.book_id
+	,b.name
+    ,SUM(o.quantity)
+FROM books_48 b
+LEFT JOIN orders_48 o
+ON b.book_id = o.book_id
+WHERE b.available_from < '2019-05-23'
+GROUP BY b.book_id
+HAVING (SUM(o.quantity) < 10 OR SUM(o.quantity) = NULL)
+;
+
+-- Q49 --
+CREATE TABLE IF NOT EXISTS enrollments
+(
+	 student_id INT
+	,course_id INT
+	,grade INT
+	,CONSTRAINT pk PRIMARY KEY (student_id, course_id)
+)
+;
+
+INSERT INTO enrollments VALUES
+	 (2,2,95)
+	,(2,3,95)
+	,(1,1,90)
+	,(1,2,99)
+	,(3,1,80)
+	,(3,2,75)
+	,(3,3,82)
+;
+
+SELECT
+	 a.student_id
+	,a.course_id
+    ,a.grade
+FROM
+(
+	SELECT
+		 student_id
+		,course_id
+        ,grade
+		,RANK() OVER (PARTITION BY student_id ORDER BY grade DESC, course_id) AS rank_order
+	FROM enrollments
+) a
+WHERE a.rank_order = 1
+;
+
+-- Q50 --
+CREATE TABLE IF NOT EXISTS players
+(
+	 players_id INT
+	,group_id VARCHAR(128)
+	,CONSTRAINT pk PRIMARY KEY (players_id)
+)
+;
+INSERT INTO players VALUES
+	 (15,1)
+	,(25,1)
+	,(30,1)
+	,(45,1)
+	,(10,2)
+	,(35,2)
+	,(50,2)
+	,(20,3)
+	,(40,3)
+;
+
+CREATE TABLE IF NOT EXISTS matches
+(
+	 match_id INT
+	,first_player INT
+	,second_player INT
+	,first_score INT
+	,second_score INT
+	,CONSTRAINT pk PRIMARY KEY (match_id)
+)
+;
+INSERT INTO matches VALUES
+	 (1,15,45,3,0)
+	,(2,30,25,1,2)
+	,(3,30,15,2,0)
+	,(4,40,20,5,2)
+	,(5,35,50,1,1)
+;
+
+SELECT 
+	 c.players_id
+	,c.score
+FROM
+(
+	SELECT
+		 b.players_id
+		,b.group_id
+		,b.score
+		,ROW_NUMBER() OVER (PARTITION BY b.group_id ORDER BY b.score, b.players_id) AS rank_order
+	FROM
+	(
+		SELECT
+			 a.players_id
+			,a.group_id
+			,SUM(a.total_score) AS score
+		FROM
+		(
+			SELECT
+				 p.group_id
+				,p.players_id
+				,SUM(
+					CASE
+						WHEN p.players_id=m.first_player THEN m.first_score
+						WHEN p.players_id=m.second_player THEN m.second_score
+					END
+					) AS total_score
+			FROM players p
+			INNER JOIN matches m
+			ON p.players_id = m.first_player
+			OR p.players_id = m.second_player
+			GROUP BY
+				 p.group_id
+				,p.players_id
+		) a
+		GROUP BY
+			 a.players_id
+			,a.group_id
+	) b
+) c
+WHERE c.rank_order = 1
+;
