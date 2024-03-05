@@ -329,3 +329,47 @@ SELECT
 	 END AS triangle
 FROM Triangle
 ;
+
+-- Q61 --
+CREATE TABLE IF NOT EXISTS Point
+(
+    x INT,
+    CONSTRAINT pk PRIMARY KEY (x)
+);
+INSERT INTO Point VALUES
+    (-1),
+    (0),
+    (2);
+
+SELECT
+	MIN(ABS(p1.x-p2.x)) AS shortest
+FROM Point p1
+CROSS JOIN Point p2
+WHERE p1.x != p2.x
+;
+
+-- Q62 --
+CREATE TABLE IF NOT EXISTS ActorDirector
+(
+    actor_id INT,
+    director_id INT,
+    timestamp INT,
+    CONSTRAINT pk PRIMARY KEY (timestamp)
+);
+INSERT INTO ActorDirector VALUES
+    (1, 1, 0),
+    (1, 1, 1),
+    (1, 1, 2),
+    (1, 2, 3),
+    (1, 2, 4),
+    (2, 1, 5),
+    (2, 1, 6);
+
+SELECT
+	 actor_id
+	,director_id
+FROM ActorDirector
+GROUP BY
+	 actor_id
+	,director_id
+HAVING COUNT(timestamp) >= 3;
