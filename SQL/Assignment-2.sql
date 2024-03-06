@@ -373,3 +373,125 @@ GROUP BY
 	 actor_id
 	,director_id
 HAVING COUNT(timestamp) >= 3;
+
+-- Q63 --
+CREATE TABLE IF NOT EXISTS Product_63
+(
+    product_id INT,
+    product_name VARCHAR(50),
+    CONSTRAINT pk PRIMARY KEY (product_id)
+);
+INSERT INTO Product_63 VALUES
+    (100, 'Nokia'),
+    (200, 'Apple'),
+    (300, 'Samsung');
+
+CREATE TABLE IF NOT EXISTS Sales_63
+(
+    sale_id INT,
+    product_id INT,
+    year INT,
+    quantity INT,
+    price INT,
+    CONSTRAINT pk PRIMARY KEY (sale_id, year),
+    CONSTRAINT fk_63 FOREIGN KEY (product_id) REFERENCES Product_63(product_id)
+);
+INSERT INTO Sales_63 VALUES
+    (1, 100, 2008, 10, 5000),
+    (2, 100, 2009, 12, 5000),
+    (7, 200, 2011, 15, 9000);
+
+SELECT DISTINCT
+	 product_name
+	,year
+	,price
+FROM Product_63 p
+INNER JOIN Sales_63 s
+ON p.product_id = s.product_id;
+
+-- Q64 --
+CREATE TABLE IF NOT EXISTS Employee_64
+(
+    employee_id INT,
+    name VARCHAR(50),
+    experience_years INT,
+    CONSTRAINT pk PRIMARY KEY (employee_id)
+);
+INSERT INTO Employee_64 VALUES
+    (1, 'Khaled', 3),
+    (2, 'Ali', 2),
+    (3, 'John', 1),
+    (4, 'Doe', 2);
+
+CREATE TABLE IF NOT EXISTS Project
+(
+    project_id INT,
+    employee_id INT,
+    CONSTRAINT pk PRIMARY KEY (project_id, employee_id),
+    CONSTRAINT fk_64 FOREIGN KEY (employee_id) REFERENCES Employee_64(employee_id)
+);
+INSERT INTO Project VALUES
+    (1, 1),
+    (1, 2),
+    (1, 3),
+    (2, 1),
+    (2, 4);
+
+SELECT
+	 p.project_id
+	,ROUND(AVG(e.experience_years),2) AS average_exp
+FROM Project p
+INNER JOIN Employee_64 e
+ON p.employee_id = e.employee_id
+GROUP BY p.project_id
+;
+
+-- Q65 --
+CREATE TABLE IF NOT EXISTS Product_65
+(
+    product_id INT,
+    product_name VARCHAR(50),
+    unit_price INT,
+    CONSTRAINT pk PRIMARY KEY (product_id)
+);
+INSERT INTO Product_65 VALUES
+    (1, 'S8', 1000),
+    (2, 'G4', 800),
+    (3, 'iPhone', 1400);
+
+CREATE TABLE IF NOT EXISTS Sales_65
+(
+    seller_id INT,
+    product_id INT,
+    buyer_id INT,
+    sale_date DATE,
+    quantity INT,
+    price INT,
+    CONSTRAINT fk_65 FOREIGN KEY (product_id) REFERENCES Product_65(product_id)
+);
+INSERT INTO Sales_65 VALUES
+    (1, 1, 1, '2019-01-21', 2, 2000),
+    (1, 2, 2, '2019-02-17', 1, 800),
+    (2, 2, 3, '2019-06-02', 1, 800),
+    (3, 3, 4, '2019-05-13', 2, 2800);
+
+SELECT
+	bestSellers.product_name
+FROM
+(
+	SELECT
+		 sales.product_name
+		,DENSE_RANK() OVER (PARTITION BY sales.product_name ORDER BY sales.total_revenue DESC) AS rank_order
+	FROM
+	(
+		SELECT
+			 p.product_name
+			,SUM(s.price) AS total_revenue
+		FROM Product_65 p
+		INNER JOIN Sales_65 s
+		ON p.product_id = s.product_id
+		GROUP BY
+			p.product_name
+	) sales
+) bestSellers
+WHERE bestSellers.rank_order = 1;
