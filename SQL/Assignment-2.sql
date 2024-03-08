@@ -564,3 +564,35 @@ INSERT INTO Customer VALUES
     (9, 'Jaze', '2019-01-09', 110),
     (1, 'Jhon', '2019-01-10', 130),
     (3, 'Jade', '2019-01-10', 150);
+
+-- Q72 --
+-- Create Transactions Table
+CREATE TABLE IF NOT EXISTS Transactions
+(
+    id INT,
+    country VARCHAR(50),
+    state ENUM('approved', 'declined'),
+    amount INT,
+    trans_date DATE,
+    CONSTRAINT pk PRIMARY KEY (id)
+);
+
+-- Insert data into Transactions Table
+INSERT INTO Transactions VALUES
+    (121, 'US', 'approved', 1000, '2018-12-18'),
+    (122, 'US', 'declined', 2000, '2018-12-19'),
+    (123, 'US', 'approved', 2000, '2019-01-01'),
+    (124, 'DE', 'approved', 2000, '2019-01-07');
+
+SELECT
+	 DATE_FORMAT(trans_date, '%y-%m') AS month
+	,country
+	,COUNT(*) AS trans_count
+	,SUM(CASE WHEN state = 'approved' THEN 1 ELSE 0 END) AS approved_count
+	,SUM(amount) AS trans_total_amount 
+	,SUM(CASE WHEN state = 'approved' THEN amount ELSE 0 END) AS approved_total_amoUNT
+FROM Transactions
+GROUP BY
+	 month
+	,country
+;
